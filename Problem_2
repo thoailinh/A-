@@ -1,0 +1,143 @@
+Lại nói về hiệp sĩ nọ. Sau khi chàng cưới công chúa được ít lâu, cuộc sống êm đềm hạnh phúc đang trôi đi thì bỗng đâu một ngày kia đất nước lâm vào họa binh đạo. Quân thù liên tục đột kích vào bên trong biên giới, giết chóc cướp phá bá gia bá tánh, làm cuộc sống nhân dân lầm than khốn đốn. Trước tình hình đó, Quốc vương quyết định xuất quân thảo phạt quân thù, hiệp sĩ cũng lên đường tòng quân giết giặc.
+
+Với tư cách là phò mã của vua, chàng được phân công thống lĩnh đoàn quân tiên phong (vì trong chiến tranh quân tiên phong là thường xuyên chết trước tiên). Hiệp sĩ được giao nhiệm vụ dẫn quân băng qua vùng biên giới, tiến đánh thẳng vào sào huyệt của địch. Vùng biên giới là tuy là đồng bằng địa hình trắc trở với nhiều ao hồ sông suối đầm lầy nằm rải rác rất khó hành quân. Tuy nhiên với phương châm thần tốc, táo bạo, bất ngờ, tất thắng, hiệp sĩ phải tìm ra con đường ngắn nhất để hành quân.
+
+Hiệp sĩ được trao một tấm bản đồ vùng biên giới với kích thước m dòng và n cột. Mỗi ô trong bản đồ được đánh một con số tương ứng với loại địa hình và thời gian cần thiết để hành quân đi qua vùng địa hình đó. Cụ thể số 1 là vùng đất đi bằng phẳng, hành quân qua vùng này mất 1 canh giờ. Số 2 là vùng ao hồ sông suối, bơi qua vùng này mất 2 canh giờ. Số 3 là vùng đầm lầy đây là vùng nguy hiểm nhất để lết được qua vùng này mất 3 canh giờ Hãy viết chương trình giúp hiệp sĩ tìm đường đi ngắn nhất
+
+
+INPUT
+
+Dòng đầu tiên của input chứa 6 con số cách nhau bởi khoảng trắng, hai con số đầu lần lượt là m, n, hai số tiếp theo là tọa độ doanh trại đoàn quân tiên phong và hai con số cuối cùng là tọa độ sào huyệt của địch
+
+m dòng tiếp theo trong input, mỗi dòng chứa n con số cách nhau bởi khoảng trắng. Đây là toàn bộ vùng biên giới
+
+
+OUTPUT
+
+Một con số duy nhất cho biết thời gian hiệp sĩ cần để dẫn quân đến chỗ địch, tính theo canh giờ.
+
+
+#include <iostream>
+#include <functional>
+#include <map>
+#include <set>
+#include <math.h>
+#include <vector>
+#include <queue>
+
+using namespace std;
+
+struct point {
+	pair<int, int> node;
+	int f;
+	point(pair<int, int> node, int f) {
+		this->node = node;
+		this->f = f;
+	}
+	bool operator < (point x)const {
+		return this->f < x.f;
+	}
+	bool operator > (point x)const {
+		return this->f > x.f;
+	}
+};
+vector<vector<pair<int, int>>> Graph;
+int CostEstimate(pair<int, int> nodeCur, pair<int, int> goal)
+{
+	int x = abs(nodeCur.first - goal.first);
+	int y = abs(nodeCur.second - goal.second);
+	if (x > y)
+		return x;
+	else
+		return y;
+}
+void Add(pair<int, int> &current, vector<pair<int, int>> &neighbors, int row, int col) 
+{
+	int x = current.first, y = current.second;
+	pair<int, int> p1(x + 1, y - 1), p2(x + 1, y), p3(x + 1, y + 1), p4(x, y + 1), p5(x - 1, y + 1), p6(x - 1, y), p7(x - 1, y - 1), p8(x, y - 1);
+	neighbors = { p1, p2, p3, p4, p5, p6, p7, p8 }; 
+	int size = 8;
+	for (int i = 0; i < size; i++) 
+	{
+		int x = neighbors[i].first, y = neighbors[i].second;
+		if (x < 0 || y < 0 || x>row || y> col || Graph[x][y].second)
+		{
+			neighbors.erase(neighbors.begin() + i);
+			size--;
+			i--;
+		}
+	}
+}
+void backtrack(map<pair<int, int>, pair<int, int>> cameFrom, pair<int, int> goal)
+{
+	map<pair<int, int>, pair<int, int>>::iterator it;
+	it = cameFrom.find(goal);
+	int count = 0;
+	while (it != cameFrom.end())
+	{
+		pair<int, int> temp = it->second;
+		count += Graph[temp.first][temp.second].first;
+		it = cameFrom.find(temp);
+	}
+	cout << count << endl;
+}
+int main() {
+	int row, col;
+	pair<int, int> start, finish;
+	cin >> row >> col >> start.first >> start.second >> finish.first >> finish.second;
+	for (int i = 0; i < row; i++)
+	{
+		vector<pair<int, int>> temp;
+		for (int j = 0; j < col; j++)
+		{
+			pair<int, int> x;
+			cin >> x.first;
+			x.second = 0;
+			temp.push_back(x);
+		}
+		Graph.insert(Graph.begin(), temp);
+	}
+	map<pair<int, int>, pair<int, int>> camefrom;
+	priority_queue<point, vector<point>, greater<point>> open;
+	open.push(point(start, CostEstimate(start, finish)));
+	map<pair<int, int>, int> g;
+	g[start] = 0;
+	while (open.size())
+	{
+		pair<int, int> current = open.top().node;
+		open.pop();
+		Graph[current.first][current.second].second = true;
+		if (current == finish)
+		{
+			backtrack(camefrom, finish);
+			system("pause");
+			return 0;
+		}
+		vector<pair<int, int>> neighBors;
+		Add(current, neighBors, row - 1, col - 1);
+		int size = neighBors.size();
+		for (int i = 0; i < size; i++)
+		{
+			pair<int, int> neb = neighBors[i];
+			map<pair<int, int>, int > ::iterator it= g.find(neb);
+			int gCur = g[current];
+			int tentative_gScore = gCur + Graph[neb.first][neb.second].first;
+			int f = tentative_gScore + CostEstimate(neb, finish);
+			if (it == g.end()) {
+				g[neb] = tentative_gScore;
+				open.push(point(neb, f));
+				camefrom[neb] = current;
+			}
+			else {
+				if (tentative_gScore < it->second) {
+					it->second = tentative_gScore;
+					open.push(point(neb, f));
+					camefrom[neb] = current;
+				}
+			}
+		}
+	}
+	cout << "-1" << endl;
+	system("pause");
+	return 0;
+}
