@@ -1,0 +1,127 @@
+Lại nói về hiệp sĩ, sau khi dẫn đoàn quân tiên phong vào tiền đồn của địch, chỉ sau vài giây ngắn ngủi, chàng đã nhận ra đây là một sai lầm khủng khiếp. Với quân lực khổng lồ của địch ở trước mặt và sông suối đầm lầy ở sau lưng, tình thế của chàng giờ đây như đèn treo trước gió như “cờ-hó” chạy cùng sào. Không còn cách nào khác chàng quyết định làm một cú bôn tẩu đến vùng rừng núi bên cánh trái.
+
+Đường rừng gập ghềnh dấu binh lửa chiếu hào quang đục ngầu, chàng thúc ngựa trong lời gào dẫn đoàn quân trăm chiến mấy ngàn binh tới ngoài biên thoát vòng ngục tù gọi nước non cũ tiến về Nam miệt mài. Đường chiều mịt mù cát bay tỏa buớc ngựa phi đường trường, nếp tàn y hùng cường vẫn còn bay trong gió. Bóng từ xa sắp dần qua bóng chàng chập chùng vượt núi non xưa với hành lương độ đường, chiếc hùng gươm danh tuớng dưới tà uy đếm nhịp đi vó ngựa phi.
+
+(Hòn vọng phu 3 - Lê Thương, Ánh Tuyết)
+
+Chàng hiệp sĩ cứ thế phi ngựa tháo chạy, trong tay chàng chỉ có mỗi một tấm bản đồ vẽ vội của vùng núi rừng dưới dạng một hình chữ nhật gồm m x n ô vuông (m, n < 5000). Ngựa của chàng mỗi canh giờ có thể phi 2 ô theo đường ngang hoặc dọc, nhưng do ngựa không biết chạy thẳng nên thường sẽ bị lệch 1 ô về phía phải hoặc trái tạo thành một đường đi hình chữ L (tham khảo quân mã trong cờ vua).
+
+Cứ mỗi một canh giờ hiệp sĩ phải cho ngựa và binh lính nghỉ mệt, tuy nhiên chàng chỉ có thể nghỉ ở những ô có địa hình rừng núi ẩn nấp được. Những ô địa hình trống trải rất dễ bị địch tập kích nên phải phi ngựa qua luôn không dừng lại được.
+
+Hãy viết chương trình tính thời gian để hiệp sĩ có thể dẫn quân từ nơi tử địa đến địa điểm an toàn.
+
+
+INPUT
+
+Dòng đầu tiên của input chứa 6 con số cách nhau bởi khoảng trắng, hai con số đầu lần lượt là m, n, hai số tiếp theo là tọa độ vùng chiến sự và hai con số của cùng là tọa độ của điểm an toàn.
+
+m dòng tiếp theo trong input, mỗi dòng chứa n con số cách nhau bởi khoảng trắng. Đây là toàn bộ bản đồ với con số 0 tượng trưng cho những ô địa hình có thể ẩn nấp nghỉ chân được và con số 1 tượng trưng cho những ô địa hình trống trải không thể dừng lại.
+
+
+OUTPUT
+
+Một con số duy nhất cho biết thời gian tối thiểu hiệp sĩ cần để dẫn quân đào tẩu. Nếu hiệp sĩ không còn đường thoát xuât ra -1.
+
+
+
+#include <iostream>
+#include <map>
+#include <set>
+#include<functional>
+#include <queue>
+#include <math.h>
+using namespace std;
+
+struct point
+{
+		int trangthai;
+		int x, y;
+		int g, f, h;
+		int close;
+		point() {};
+		point(const point&t)
+		{
+			this->trangthai = t.trangthai;
+			this->x = t.x;
+			this->y = t.y;
+			this->g = t.g;
+			this->f = t.f;
+			this->h = t.h;
+			this->close = t.close;
+		}
+		bool operator <(point a) const
+		{
+			return f < a.f;
+		}
+		bool operator>(point a)const
+		{
+			return f > a.f;
+		}
+
+};
+void findnode(int row, int col, point &a, vector<vector<point>> & matrix, priority_queue<point, vector<point>, greater<point>> &open, point & princess)
+{
+	int dx[8] = { -2,-2,-1,-1,1,1,2,2 };
+	int dy[8] = { -1,1,2,-2,2,-2,1,-1 };
+	int check = 0;
+	for (int i = 0; i < 8; i++)
+	{
+		int k, j;
+		k = a.x + dx[i];
+		j = a.y + dy[i];
+		if (k >= 0 && k < row&&j >= 0 && j < col && matrix[k][j].close == 0 && matrix[k][j].trangthai == 0)
+		{
+			if (matrix[k][j].g > a.g + 1)
+			{
+				matrix[k][j].g = a.g + 1;
+				matrix[k][j].f = matrix[k][j].g + matrix[k][j].h;
+				open.push(point(matrix[k][j]));
+			}
+		}
+	}
+}
+
+int main()
+{
+	int row, col;
+	point prince, princess;
+	cin >> row >> col >> prince.x >> prince.y >> princess.x >> princess.y;
+	vector<vector<point>> matrix(row, vector<point>(col));
+	for (int i = row - 1; i >= 0; i--)
+	{
+		for (int j = 0; j < col; j++)
+		{
+			cin >> matrix[i][j].trangthai;
+			matrix[i][j].x = i;
+			matrix[i][j].y = j;
+			matrix[i][j].g = 1000000;
+			matrix[i][j].h = 0;
+			matrix[i][j].close = 0;
+		}
+	}
+	prince = matrix[prince.x][prince.y];
+	prince.g = 0;
+	prince.f = prince.g + prince.h;
+	priority_queue<point, vector<point>, greater<point>> open;
+	open.push(point(prince));
+	point p;
+	while (open.empty() == false)
+	{
+		p = open.top();
+		open.pop();
+		matrix[p.x][p.y].close = 1;
+		if (p.x == princess.x&&p.y == princess.y)
+		{
+			cout << p.g;
+			system("pause");
+			return 0;
+		}
+		else
+		{
+			findnode(row, col, p, matrix, open, princess);
+		}
+	}
+	cout << "-1"<<endl;
+	system("pause");
+	return 0;
+}
